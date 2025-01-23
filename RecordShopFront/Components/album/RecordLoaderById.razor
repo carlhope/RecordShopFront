@@ -1,0 +1,23 @@
+﻿@using RecordShopFront.Components.album
+@if(Album==null){
+    <Loader Message="Loading Records"/>
+}
+else{
+    <RecordSummaryList Records ="Album"></RecordSummaryList>
+}
+
+@code {
+    AlbumReadDto? Album { get; set; }
+    [Parameter]
+    public int id { get; set; }
+   
+    protected override async Task OnInitializedAsync()
+    {
+        HttpClient httpClient = new HttpClient();
+        await Task.Delay(3000);//Testing loader, remove when finished
+        Album = await httpClient.GetFromJsonAsync<AlbumReadDto>("https://localhost:7097/api/album/{id}");
+        
+    }
+    
+
+}
