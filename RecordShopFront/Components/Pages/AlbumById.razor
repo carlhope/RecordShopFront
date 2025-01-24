@@ -1,5 +1,9 @@
-﻿<h3>AlbumById</h3>
+﻿@page "/albums/{id:int}"
+<h3>AlbumById</h3>
+<RecordShopFront.Components.album.RecordLoaderById id="id"/>
 
 @code {
+    [Parameter]
+    public int id { get; set; }
 
 }

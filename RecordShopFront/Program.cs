@@ -13,6 +13,8 @@ namespace RecordShopFront
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents()
                 .AddInteractiveWebAssemblyComponents();
+            builder.Services.AddHttpClient("MyHttpClient", client =>
+                client.BaseAddress = new Uri("https://localhost:7097/api/"));
 
             var app = builder.Build();
 

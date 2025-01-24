@@ -1,61 +1,43 @@
 ﻿@using System.Text.Json
 @using System.Text
 <div>
-<EditForm Model="Record" OnValidSubmit="Submit">
-    <label for="Title">Title </label>
-    <InputText @bind-Value="Record.Title" />
-    <label for="Description">Description</label>
-    <InputText @bind-Value="Record.Description" />
-    <button type="submit">Save</button>
-</EditForm>
-</div>
-<div>
-    <h3>Add Genre to Album</h3>
-    <EditForm Model="Genre" OnValidSubmit="Submit3">
-        <label for="Genre">Genre</label>
-        
+    <EditForm Model="Record" OnValidSubmit="ValidSubmit">
+        <label for="Title">Title </label>
+        <InputText @bind-Value="Record.Title" />
+        <label for="Description">Description</label>
+        <InputText @bind-Value="Record.Description" />
+        <label>Genres</label>
+
+        @foreach (var genre in AllGenres){
+            <div>
+                <input type="checkbox" checked="@IsChecked(genre)" value="@genre" @onchange="(e) => UpdateSelectedGenres(e, genre)" /> @genre.ToString()
+            </div>
+        }
+
+
+        <button type="submit">Save</button>
     </EditForm>
 </div>
 
-       
-  
+
+
 
 
 @code {
     [Parameter]
     public AlbumReadDto Record { get; set; }
-    public AlbumGenreWriteDto Genre { get; set; }
+    private List<Genre> AllGenres { get; set; } = new List<Genre>();
+    private HashSet<Genre> SelectedGenres { get; set; } = new HashSet<Genre>();
+    
 
 
-
-    protected override async Task OnInitializedAsync()
+    private void ValidSubmit()
     {
-        AlbumReadDto Album = new()
-            {
-                Title = "Abbey Road",
-                Description = "kdfahdklfhakldfhakld",
-                Genres = new List<AlbumGenreReadDto>
-                {
-                    new AlbumGenreReadDto
-                    {
-                        Genre = Genre.Rock
-                    }
-                },
-                ArtistJunction = new List<ArtistAlbumJunctionReadDto>
-                {
-                    new ArtistAlbumJunctionReadDto
-                    {
-                        Artist = new(){
-                            Id = 1,
-                            Name = "The Beatles"
-                        }
-                    }
-                }
-            };
-    }
-
-    private void Submit()
-    {
+        Record.Genres.Clear();
+        foreach(var genre in SelectedGenres){
+            
+            Record.Genres.Add(new AlbumGenreReadDto { AlbumId = Record.Id, Genre = genre });
+        }
         HttpClient httpClient = new HttpClient();
         var content = new StringContent(JsonSerializer.Serialize(Record), Encoding.UTF8, "application/json");
         var response = httpClient.PostAsync("https://localhost:7097/api/album", content).Result;
@@ -68,12 +50,33 @@
             Console.WriteLine("Fail");
         }
     }
-
-    private void Submit3()
+    protected override async Task OnInitializedAsync()
     {
-        //genre must be enum. maybe dropdown
-        Genre.AlbumId = Record.Id;
-        Console.WriteLine("Genre Added");
+        AllGenres = Enum.GetValues(typeof(Genre)).Cast<Genre>().ToList();
+        foreach (var genreDto in Record.Genres)
+        {
+            if (Enum.TryParse<Genre>(genreDto.Genre.ToString(), out var genre))
+            {
+                SelectedGenres.Add(genre);
+            }
+        }
+        
+    }
+    private void UpdateSelectedGenres(ChangeEventArgs e, Genre genre)
+    {
+        var isChecked = (bool)e.Value;
+        if (isChecked)
+        {
+            SelectedGenres.Add(genre);
+        }
+        else
+        {
+            SelectedGenres.Remove(genre);
+        }
+    }
+    private bool IsChecked(Genre genre)
+    {
+        return SelectedGenres.Contains(genre);
     }
     
 
