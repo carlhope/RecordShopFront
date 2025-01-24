@@ -4,7 +4,7 @@
     <Loader Message="Loading Records"/>
 }
 else{
-    <RecordSummaryById Record ="Album"></RecordSummaryById>
+    <RecordSummaryById Record ="Album" AllArtists ="AllArtists"></RecordSummaryById>
     <p>hello</p>
 }
 
@@ -12,12 +12,14 @@ else{
     AlbumReadDto? Album { get; set; }
     [Parameter]
     public int id { get; set; }
+    public List<ArtistReadDto> AllArtists { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         var client = ClientFactory.CreateClient("MyHttpClient");
         //await Task.Delay(3000);//Testing loader, remove when finished
         Album = await client.GetFromJsonAsync<AlbumReadDto>($"album/{id}");
+        AllArtists = await client.GetFromJsonAsync<List<ArtistReadDto>>("artist");
 
     }
     
