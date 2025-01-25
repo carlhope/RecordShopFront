@@ -1,27 +1,129 @@
 ﻿@inject IHttpClientFactory ClientFactory
 @using RecordShopFront.Components.album
-@if(Album==null){
-    <Loader Message="Loading Records"/>
+@using System.Text.Json
+@using System.Text
+
+@if (Album == null)
+{
+    <Loader Message="Loading Records" />
 }
-else{
-    <RecordSummaryById Record ="Album" AllArtists ="AllArtists"></RecordSummaryById>
-    <p>hello</p>
+else
+{
+    <div>
+        <EditForm Model="@Album" FormName="UpdateAlbum" OnValidSubmit="ValidSubmit">
+            <label for="Title">Title</label>
+            <InputText @bind-Value="Album.Title" />
+            <label for="Description">Description</label>
+            <InputText @bind-Value="Album.Description" />
+            <label>Assign genre to album</label>
+            @foreach (var genre in AllGenres)
+            {
+                <div>
+                    <input type="checkbox" checked="@IsGenreChecked(genre)" value="@genre" @onchange="(e) => UpdateSelectedGenres(e, genre)" /> @genre.ToString()
+                </div>
+            }
+            <div>
+                <label>Artists</label>
+                <select @bind="@SelectedArtistIds" multiple>
+                    @foreach (var artist in AllArtists)
+                    {
+                        <option value="@artist.Id" selected="@SelectedArtistIds.Contains(artist.Id)">@artist.Name</option>
+                    }
+                </select>
+            </div>
+            <button type="submit">Save</button>
+        </EditForm>
+    </div>
+
+    <CascadingValue Value="@Album">
+        <RecordSummaryById AllArtists="AllArtists"></RecordSummaryById>
+    </CascadingValue>
 }
 
 @code {
-    AlbumReadDto? Album { get; set; }
     [Parameter]
     public int id { get; set; }
-    public List<ArtistReadDto> AllArtists { get; set; }
+    AlbumReadDto? Album = new AlbumReadDto();
+    private List<ArtistReadDto> AllArtists = new List<ArtistReadDto>();
+    private HashSet<Genre> SelectedGenres { get; set; } = new HashSet<Genre>();
+    public List<ArtistReadDto> SelectedArtists { get; set; } = new List<ArtistReadDto>();
+    private List<int> SelectedArtistIds { get; set; } = new List<int>();
+    private List<Genre> AllGenres = new List<Genre>();
 
     protected override async Task OnInitializedAsync()
     {
         var client = ClientFactory.CreateClient("MyHttpClient");
-        //await Task.Delay(3000);//Testing loader, remove when finished
         Album = await client.GetFromJsonAsync<AlbumReadDto>($"album/{id}");
         AllArtists = await client.GetFromJsonAsync<List<ArtistReadDto>>("artist");
-
+        AllGenres = Enum.GetValues(typeof(Genre)).Cast<Genre>().ToList();
+        SelectedArtistIds = Album.ArtistJunction.Select(j => j.Artist.Id).ToList();
     }
-    
 
+    private async Task ValidSubmit()
+    {
+        List<ArtistAlbumJunctionWriteDto> artistJunctions = new List<ArtistAlbumJunctionWriteDto>();
+        List<AlbumGenreWriteDto> genres = new List<AlbumGenreWriteDto>();
+
+        foreach (var artistId in SelectedArtistIds)
+        {
+            artistJunctions.Add(new ArtistAlbumJunctionWriteDto
+                {
+                    ArtistId = artistId,
+                    AlbumId = Album.Id
+                });
+        }
+        foreach (var genre in SelectedGenres)
+        {
+            genres.Add(new AlbumGenreWriteDto
+                {
+                    AlbumId = Album.Id,
+                    Genre = genre
+                });
+        }
+
+        var albumWriteDto = new AlbumWriteDto
+            {
+                Id = Album.Id,
+                Title = Album.Title,
+                Description = Album.Description,
+                Genres = genres,
+                ArtistJunction = artistJunctions
+            };
+
+        var client = ClientFactory.CreateClient("MyHttpClient");
+        var content = new StringContent(JsonSerializer.Serialize(albumWriteDto), Encoding.UTF8, "application/json");
+        var response = await client.PutAsync($"album/{albumWriteDto.Id}", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Success");
+        }
+        else
+        {
+            Console.WriteLine("Fail");
+        }
+    }
+
+    private bool IsGenreChecked(Genre genre)
+    {
+        return SelectedGenres.Contains(genre);
+    }
+
+    private bool IsArtistChecked(ArtistReadDto artist)
+    {
+        return SelectedArtists.Contains(artist);
+    }
+
+    private void UpdateSelectedGenres(ChangeEventArgs e, Genre genre)
+    {
+        var isChecked = (bool)e.Value;
+        if (isChecked)
+        {
+            SelectedGenres.Add(genre);
+        }
+        else
+        {
+            SelectedGenres.Remove(genre);
+        }
+    }
 }

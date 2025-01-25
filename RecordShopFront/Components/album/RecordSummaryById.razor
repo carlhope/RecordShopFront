@@ -1,32 +1,7 @@
-﻿
+﻿@inject IHttpClientFactory ClientFactory
 @using System.Text.Json
 @using System.Text
-<div>
-    <EditForm Model="Record" FormName="UpdateAlbum" OnValidSubmit="ValidSubmit">
-        <label for="Title">Title </label>
-        <InputText @bind-Value="Record.Title" />
-        <label for="Description">Description</label>
-        <InputText @bind-Value="Record.Description" />
-        <label>Genres</label>
 
-        @foreach (var genre in AllGenres){
-            <div>
-                <input type="checkbox" checked="@IsGenreChecked(genre)" value="@genre" @onchange="(e) => UpdateSelectedGenres(e, genre)" /> @genre.ToString()
-            </div>
-        }
-        <label>Artists</label>
-        <select multiple @onchange="UpdateSelectedArtists">
-            @foreach (var artist in AllArtists)
-            {
-                <option value="@artist.Id" selected="@IsArtistChecked(artist)">@artist.Name</option>
-            }
-        </select>
-
-
-
-        <button type="submit">Save</button>
-    </EditForm>
-</div>
 
 
 
@@ -34,109 +9,23 @@
 
 @code {
    
-    [Parameter]
-    [SupplyParameterFromForm]//can i use both together?
-    public AlbumReadDto Record { get; set; }
-    private List<Genre> AllGenres { get; set; } = new List<Genre>();
-    private HashSet<Genre> SelectedGenres { get; set; } = new HashSet<Genre>();
-    [Parameter]
-    public List<ArtistReadDto> AllArtists { get; set; } = new List<ArtistReadDto>();
-    public List<ArtistReadDto> SelectedArtists { get; set; } = new List<ArtistReadDto>();
-    private int SelectedArtistId { get; set; }
+ 
+    @code {
+        [Parameter]
+        public List<ArtistReadDto> AllArtists { get; set; }
 
-
-
-    private void ValidSubmit()
-    {
-        List<ArtistAlbumJunctionWriteDto> artistJunctions = new List<ArtistAlbumJunctionWriteDto>();
-        List<AlbumGenreWriteDto> genres = new List<AlbumGenreWriteDto>();
-        foreach (var artist in SelectedArtists)
-        {
-            ArtistAlbumJunctionWriteDto artistAlbumJunctionWriteDto = new ArtistAlbumJunctionWriteDto()
-                {
-                    ArtistId = artist.Id,
-                    AlbumId = Record.Id
-                };
-            artistJunctions.Add(artistAlbumJunctionWriteDto);
-        }
-        foreach(var genre in SelectedGenres){
-            genres.Add(new AlbumGenreWriteDto { AlbumId = Record.Id, Genre = genre });
-        }
-        AlbumWriteDto albumWriteDto = new AlbumWriteDto()
-            {
-                Id = Record.Id,
-                Title = Record.Title,
-                Description = Record.Description,
-                Genres = genres,
-                ArtistJunction = artistJunctions
-            };
-        HttpClient httpClient = new HttpClient();
-        var content = new StringContent(JsonSerializer.Serialize(albumWriteDto), Encoding.UTF8, "application/json");
-        var response = httpClient.PutAsync($"https://localhost:7097/api/album/{albumWriteDto.Id}", content).Result;
-        if (response.IsSuccessStatusCode)
-        {
-            Console.WriteLine("Success");
-        }
-        else
-        {
-            Console.WriteLine("Fail");
-        }
+        // Other properties and code for the component
     }
+
+
+
+    
     protected override async Task OnInitializedAsync()
     {
-        AllGenres = Enum.GetValues(typeof(Genre)).Cast<Genre>().ToList();
-        foreach (var genreDto in Record.Genres)
-        {
-            if (Enum.TryParse<Genre>(genreDto.Genre.ToString(), out var genre))
-            {
-                SelectedGenres.Add(genre);
-            }
-        }
-
-        //artists section
-        foreach (var junction in Record.ArtistJunction)
-        {
-            var artist = AllArtists.FirstOrDefault(a => a.Id == junction.Artist.Id);
-            if (artist != null)
-            {
-                SelectedArtists.Add(artist);
-            }
-        }
+      
 
     }
-    private void UpdateSelectedGenres(ChangeEventArgs e, Genre genre)
-    {
-        var isChecked = (bool)e.Value;
-        if (isChecked)
-        {
-            SelectedGenres.Add(genre);
-        }
-        else
-        {
-            SelectedGenres.Remove(genre);
-        }
-    }
-    private bool IsGenreChecked(Genre genre)
-    {
-        return SelectedGenres.Contains(genre);
-    }
-    private bool IsArtistChecked(ArtistReadDto artist)
-    {
-        return SelectedArtists.Contains(artist);
-    }
-    private void UpdateSelectedArtists(ChangeEventArgs e)
-    {
-        var selectedArtistIds = e.Value.ToString().Split(",").Select(int.Parse).ToList();
-        SelectedArtists.Clear();
-        foreach(var artistId in selectedArtistIds){
-            var artist = AllArtists.FirstOrDefault(a => a.Id == artistId);
-            if (artist != null && !SelectedArtists.Contains(artist))
-            {
-                SelectedArtists.Add(artist);
-            }
-        }
-        Console.WriteLine(SelectedArtists.Count);
-    }
+
     
 
 }
