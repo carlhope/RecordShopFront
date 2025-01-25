@@ -1,31 +1,116 @@
 ﻿@inject IHttpClientFactory ClientFactory
 @using System.Text.Json
 @using System.Text
+@using RecordShopFront.Services
+@using RecordShopFront.models
 
+<div>
+    <EditForm Model="@Album" FormName="UpdateAlbum" OnValidSubmit="ValidSubmit">
+        <label for="Title">Title</label>
+        <InputText @bind-Value="Album.Title" />
+        <label for="Description">Description</label>
+        <InputText @bind-Value="Album.Description" />
+        <button type="submit">Save</button>
+    </EditForm>
+    <EditForm Model="@addJunction" FormName="AddArtist" OnSubmit="AddArtist">
+        <!--link to artist via artist id-->
+        <label for="Artist">Artist</label>
+        <InputNumber @bind-Value="addJunction.ArtistId"/>
+        <button type="submit">Add Artist</button>
+    </EditForm>
+    <EditForm Model="@removeJunction" FormName="RemoveArtist" OnSubmit="RemoveArtist">
+        <!--link to artist via artist id-->
+        <label for="Artist">Artist</label>
+        <InputNumber @bind-Value="removeJunction.ArtistId" />
+        <button type="submit">Remove Artist</button>
+    </EditForm>
 
+</div>
 
 
 
 
 @code {
-   
- 
-    @code {
-        [Parameter]
-        public List<ArtistReadDto> AllArtists { get; set; }
 
-        // Other properties and code for the component
-    }
+    [Parameter]
+    public List<ArtistReadDto> AllArtists { get; set; }
+    [Parameter]
+    public AlbumReadDto Album { get; set; }
+    [Parameter]
+    public List<Genre> AllGenres { get; set; }
+    [Parameter]
+    public JunctionViewModel addJunction { get; set; } = new JunctionViewModel();
+    public JunctionViewModel removeJunction { get; set; } = new JunctionViewModel();
 
 
-
-    
-    protected override async Task OnInitializedAsync()
+    private async void ValidSubmit()
     {
-      
+        AlbumWriteDto albumWriteDto = AlbumService.ConvertFromReadToWrite(Album);
+        var client = ClientFactory.CreateClient("MyHttpClient");
+        var content = new StringContent(JsonSerializer.Serialize(albumWriteDto), Encoding.UTF8, "application/json");
+        var response = await client.PutAsync($"album/{albumWriteDto.Id}", content);
 
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Success");
+        }
+        else
+        {
+            Console.WriteLine("Fail");
+        }
+    }
+
+    private async void AddArtist()
+    {
+        AlbumWriteDto albumWriteDto = AlbumService.AddArtist(Album, addJunction.ArtistId);
+        await SubmitAfterEdit(albumWriteDto);
+
+
+    }
+    private async void RemoveArtist()
+    {
+
+        var client = ClientFactory.CreateClient("MyHttpClient"); 
+        var data = Album.ArtistJunction.Where(j => j.ArtistId == removeJunction.ArtistId).FirstOrDefault();
+        if (data != null) 
+        {
+            var entryId = new { id = data.Id };//change line 78 back to entryId if fails
+            var content = new StringContent(JsonSerializer.Serialize(data.Id), Encoding.UTF8, "application/json");
+            var request = new HttpRequestMessage(HttpMethod.Delete, "ArtistAlbum")
+                {
+                    Content = content
+                };
+            var response = await client.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Success");
+            }
+            else
+            {
+                Console.WriteLine("Fail");
+            }
+        }
+        else{
+            Console.WriteLine("Artist not found");
+        }
+
+    }
+    private async Task SubmitAfterEdit(AlbumWriteDto albumWriteDto)
+    {
+        var client = ClientFactory.CreateClient("MyHttpClient");
+        var content = new StringContent(JsonSerializer.Serialize(albumWriteDto), Encoding.UTF8, "application/json");
+        var response = await client.PutAsync($"album/{albumWriteDto.Id}", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Success");
+        }
+        else
+        {
+            Console.WriteLine("Fail");
+        }
     }
 
     
-
 }
