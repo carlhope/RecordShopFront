@@ -14,16 +14,34 @@
     </EditForm>
     <EditForm Model="@addJunction" FormName="AddArtist" OnSubmit="AddArtist">
         <!--link to artist via artist id-->
-        <label for="Artist">Artist</label>
+        <label for="addJunction.ArtistId">Artist</label>
         <InputNumber @bind-Value="addJunction.ArtistId"/>
         <button type="submit">Add Artist</button>
     </EditForm>
     <EditForm Model="@removeJunction" FormName="RemoveArtist" OnSubmit="RemoveArtist">
         <!--link to artist via artist id-->
-        <label for="Artist">Artist</label>
+        <label for="removeJunction.ArtistId">Artist</label>
         <InputNumber @bind-Value="removeJunction.ArtistId" />
         <button type="submit">Remove Artist</button>
     </EditForm>
+    <EditForm Model="AddGenre" FormName="AddGenre" OnSubmit="AddGenreToAlbum">
+        <InputSelect @bind-Value="AddGenre.Genre">
+            @foreach(var g in Enum.GetValues(typeof(Genre))){
+                <option value="@g">@g</option>
+            }
+        </InputSelect>
+        <button type="submit">Add Genre</button>
+    </EditForm>
+    <EditForm Model="RemoveGenre" FormName="RemoveGenre" OnSubmit="RemoveGenreFromAlbum">
+        <InputSelect @bind-Value="RemoveGenre.Genre">
+            @foreach (var g in Enum.GetValues(typeof(Genre)))
+            {
+                <option value="@g">@g</option>
+            }
+        </InputSelect>
+        <button type="submit">Remove Genre</button>
+    </EditForm>
+
 
 </div>
 
@@ -32,8 +50,8 @@
 
 @code {
 
-    [Parameter]
-    public List<ArtistReadDto> AllArtists { get; set; }
+    //[Parameter]
+    //public List<ArtistReadDto> AllArtists { get; set; }
     [Parameter]
     public AlbumReadDto Album { get; set; }
     [Parameter]
@@ -41,6 +59,8 @@
     [Parameter]
     public JunctionViewModel addJunction { get; set; } = new JunctionViewModel();
     public JunctionViewModel removeJunction { get; set; } = new JunctionViewModel();
+    public GenreViewModel AddGenre { get; set; } = new GenreViewModel();
+    public GenreViewModel RemoveGenre { get; set; } = new GenreViewModel();
 
 
     private async void ValidSubmit()
@@ -62,8 +82,15 @@
 
     private async void AddArtist()
     {
-        AlbumWriteDto albumWriteDto = AlbumService.AddArtist(Album, addJunction.ArtistId);
-        await SubmitAfterEdit(albumWriteDto);
+        var client = ClientFactory.CreateClient("MyHttpClient");
+        ArtistReadDto? artist = await client.GetFromJsonAsync<ArtistReadDto>($"artist/{addJunction.ArtistId}");
+        var result = AlbumService.AddArtist(Album, addJunction.ArtistId);
+        ArtistAlbumJunctionWriteDto albumWriteDto = result.Item2;
+        if (result.Item1.IsSuccess == true && artist!=null)
+        {
+            await SubmitAfterEdit(albumWriteDto);
+            Album.ArtistJunction.Add( new ArtistAlbumJunctionReadDto(){AlbumId = Album.Id, ArtistId = addJunction.ArtistId});
+        }
 
 
     }
@@ -74,13 +101,8 @@
         var data = Album.ArtistJunction.Where(j => j.ArtistId == removeJunction.ArtistId).FirstOrDefault();
         if (data != null) 
         {
-            var entryId = new { id = data.Id };//change line 78 back to entryId if fails
-            var content = new StringContent(JsonSerializer.Serialize(data.Id), Encoding.UTF8, "application/json");
-            var request = new HttpRequestMessage(HttpMethod.Delete, "ArtistAlbum")
-                {
-                    Content = content
-                };
-            var response = await client.SendAsync(request);
+
+            var response = await client.DeleteAsync($"artistalbum/{data.Id}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -96,11 +118,11 @@
         }
 
     }
-    private async Task SubmitAfterEdit(AlbumWriteDto albumWriteDto)
+    private async Task SubmitAfterEdit(ArtistAlbumJunctionWriteDto albumWriteDto)
     {
         var client = ClientFactory.CreateClient("MyHttpClient");
         var content = new StringContent(JsonSerializer.Serialize(albumWriteDto), Encoding.UTF8, "application/json");
-        var response = await client.PutAsync($"album/{albumWriteDto.Id}", content);
+        var response = await client.PostAsync($"artistalbum", content);
 
         if (response.IsSuccessStatusCode)
         {
@@ -110,6 +132,53 @@
         {
             Console.WriteLine("Fail");
         }
+    }
+    private async void AddGenreToAlbum()
+    {
+        var client = ClientFactory.CreateClient("MyHttpClient");
+        AddGenre.AlbumId = Album.Id;
+        AlbumWriteDto writeDto = AlbumService.ConvertFromReadToWrite(Album);
+        if (!Album.Genres.Any(g => g.Genre == AddGenre.Genre))
+        {
+            Album = await client.GetFromJsonAsync<AlbumReadDto>($"album/{Album.Id}"); //resolve out of sync from db
+            if (!Album.Genres.Any(g => g.Genre == AddGenre.Genre))
+            {
+
+           
+            writeDto.Genres.Add(AlbumService.GenreViewModelToWriteDto(AddGenre));
+
+            
+            var content = new StringContent(JsonSerializer.Serialize(writeDto), Encoding.UTF8, "application/json");
+            var response = await client.PutAsync($"album/{Album.Id}", content);
+            }
+
+        }
+
+
+
+    }
+    private async void RemoveGenreFromAlbum()
+    {
+        var client = ClientFactory.CreateClient("MyHttpClient");
+        var genreToRemove = Album.Genres.Where(g => g.Genre == RemoveGenre.Genre).FirstOrDefault();
+        if (genreToRemove == null) {
+            Album = await client.GetFromJsonAsync<AlbumReadDto>($"album/{Album.Id}"); //resolve out of sync from db 
+            genreToRemove = Album.Genres.Where(g => g.Genre == RemoveGenre.Genre).FirstOrDefault();
+            
+        }
+        if (genreToRemove != null)
+        {
+            Album.Genres.Remove(genreToRemove);
+            var response = await client.DeleteAsync($"genre/{genreToRemove.Id}");
+            Console.WriteLine(response);
+        }
+        
+        
+
+        
+
+
+
     }
 
     

@@ -1,5 +1,7 @@
 ﻿using RecordShop.Common.Dto.Music;
+using RecordShop.Common.Models;
 using RecordShopFront.Components.Pages;
+using RecordShopFront.models;
 
 namespace RecordShopFront.Services
 {
@@ -21,7 +23,8 @@ namespace RecordShopFront.Services
             {
                 WriteAlbum.Genres.Add(new AlbumGenreWriteDto()
                 {
-                    AlbumId = genre.Id,
+                    Id = genre.Id,
+                    AlbumId = genre.AlbumId,
                     Genre = genre.Genre
                 });
             }
@@ -36,24 +39,63 @@ namespace RecordShopFront.Services
             }
             return WriteAlbum;
         }
-        public static AlbumWriteDto AddArtist( AlbumReadDto readAlbum, int artistId)
+        public static (OperationResult,ArtistAlbumJunctionWriteDto) AddArtist( AlbumReadDto readAlbum, int artistId)
         {
+            OperationResult operationResult = new OperationResult();
+            ArtistAlbumJunctionWriteDto dto = new ArtistAlbumJunctionWriteDto();
             Console.WriteLine("adding artist");
-            int artId = artistId;
             var albumWriteDto = ConvertFromReadToWrite(readAlbum);
-            if (!readAlbum.ArtistJunction.Any(j => j.ArtistId == artId))
+            var artistExists = readAlbum.ArtistJunction.Any(j => j.ArtistId == artistId);
+            if (artistExists==false)
             {
-                
-                albumWriteDto.ArtistJunction.Add(new ArtistAlbumJunctionWriteDto()
-                {
-                    AlbumId = readAlbum.Id,
-                    ArtistId = artId
-                });
+
+               dto.ArtistId = artistId;
+               dto.AlbumId = readAlbum.Id;
+               operationResult.IsSuccess = true;
             }
-            return albumWriteDto;
+            return (operationResult, dto);
 
         }
-        
+        public static GenreViewModel GenreReadDtoToViewModel(AlbumGenreReadDto dto)
+        {
+            GenreViewModel vm = new GenreViewModel()
+            {
+                Id = dto.Id,
+                AlbumId = dto.AlbumId,
+                Genre = dto.Genre,
+            };
+            return vm;
+        }
+        public static AlbumGenreReadDto GenreViewModelToReadDto(GenreViewModel vm)
+        {
+            AlbumGenreReadDto dto = new()
+            {
+                Id = vm.Id,
+                AlbumId = vm.AlbumId,
+                Genre = vm.Genre,
+            };
+            return dto;
+        }
+        public static AlbumGenreWriteDto GenreViewModelToWriteDto(GenreViewModel vm)
+        {
+            AlbumGenreWriteDto dto = new AlbumGenreWriteDto(){
+                Id = vm.Id,
+                AlbumId = vm.AlbumId,
+                Genre = vm.Genre,
+            };
+            return dto;
+        }
+        public static AlbumGenreWriteDto ConvertToWriteDtoFromGenreReadDTO(AlbumGenreReadDto read)
+        {
+            AlbumGenreWriteDto writeDto = new AlbumGenreWriteDto()
+            {
+                Id = read.Id,
+                AlbumId = read.AlbumId,
+                Genre = read.Genre,
+            };
+            return writeDto;
+        }
+
     }
     
     }
