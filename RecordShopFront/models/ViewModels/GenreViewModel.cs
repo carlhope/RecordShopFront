@@ -1,6 +1,6 @@
 ﻿using RecordShop.Common.Enums;
 
-namespace RecordShopFront.models
+namespace RecordShopFront.models.ViewModels
 {
     public class GenreViewModel
     {

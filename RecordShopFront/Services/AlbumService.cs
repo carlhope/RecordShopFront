@@ -1,7 +1,7 @@
 ﻿using RecordShop.Common.Dto.Music;
 using RecordShop.Common.Models;
 using RecordShopFront.Components.Pages;
-using RecordShopFront.models;
+using RecordShopFront.models.ViewModels;
 
 namespace RecordShopFront.Services
 {

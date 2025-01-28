@@ -1,8 +1,9 @@
 ﻿@inject IHttpClientFactory ClientFactory
-@using System.Text.Json
-@using System.Text
-@using RecordShopFront.Services
-@using RecordShopFront.models
+@    using System.Text.Json
+@    using System.Text
+@    using RecordShopFront.Services
+@    using RecordShopFront.models;
+    using RecordShopFront.models.ViewModels
 
 <div>
     <EditForm Model="@Album" FormName="UpdateAlbum" OnValidSubmit="ValidSubmit">
