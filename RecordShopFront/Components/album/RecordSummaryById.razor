@@ -1,6 +1,8 @@
 ﻿@inject IHttpClientFactory ClientFactory
 @using System.Text.Json
 @using System.Text
+@using RecordShopFront.Services
+@using RecordShopFront.models.ViewModels
 
 
 
@@ -17,14 +19,63 @@
         // Other properties and code for the component
     }
 
+    private async void AddArtist()
+    {
+        var client = ClientFactory.CreateClient("MyHttpClient");
+        ArtistReadDto? artist = await client.GetFromJsonAsync<ArtistReadDto>($"artist/{addJunction.ArtistId}");
+        var result = AlbumService.AddArtist(Album, addJunction.ArtistId);
+        ArtistAlbumJunctionWriteDto albumWriteDto = result.Item2;
+        if (result.Item1.IsSuccess == true && artist!=null)
+        {
+            await SubmitAfterEdit(albumWriteDto);
+            Album.ArtistJunction.Add( new ArtistAlbumJunctionReadDto(){AlbumId = Album.Id, ArtistId = addJunction.ArtistId});
+            //???
+        }
 
 
     
     protected override async Task OnInitializedAsync()
     {
-      
+        //causing artistalbumjunction to add entries
+        var client = ClientFactory.CreateClient("MyHttpClient");
+        AddGenre.AlbumId = Album.Id;
+        AlbumWriteDto writeDto = AlbumService.ConvertFromReadToWrite(Album);
+        if (!Album.Genres.Any(g => g.Genre == AddGenre.Genre))
+        {
+            Album = await client.GetFromJsonAsync<AlbumReadDto>($"album/{Album.Id}"); //resolve out of sync from db
+            if (!Album.Genres.Any(g => g.Genre == AddGenre.Genre))
+            {
+
+           
+            writeDto.Genres.Add(AlbumService.GenreViewModelToWriteDto(AddGenre));
+
+            
+            var content = new StringContent(JsonSerializer.Serialize(writeDto), Encoding.UTF8, "application/json");
+            var response = await client.PutAsync($"album/{Album.Id}", content);
+            }
+
+        }
+
+
 
     }
+    private async void RemoveGenreFromAlbum()
+    {
+        var client = ClientFactory.CreateClient("MyHttpClient");
+        var genreToRemove = Album.Genres.Where(g => g.Genre == RemoveGenre.Genre).FirstOrDefault();
+        if (genreToRemove == null) {
+            Album = await client.GetFromJsonAsync<AlbumReadDto>($"album/{Album.Id}"); //resolve out of sync from db 
+            genreToRemove = Album.Genres.Where(g => g.Genre == RemoveGenre.Genre).FirstOrDefault();
+            
+        }
+        if (genreToRemove != null)
+        {
+            Album.Genres.Remove(genreToRemove);
+            var response = await client.DeleteAsync($"genre/{genreToRemove.Id}");
+            Console.WriteLine(response);
+        }
+        
+        
 
     
 

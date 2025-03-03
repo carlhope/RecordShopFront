@@ -13,7 +13,6 @@ else{
     protected override async Task OnInitializedAsync()
     {
         var client = ClientFactory.CreateClient("MyHttpClient");
-        await Task.Delay(3000);//Testing loader, remove when finished
         Albums = await client.GetFromJsonAsync<List<AlbumReadDto>>("album");
         
     }

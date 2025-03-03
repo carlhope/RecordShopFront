@@ -2,24 +2,24 @@
 
         @if(Records.Count>0)
         {
-    <h3>RecordSummaryList</h3>
-    <div class="container">
-        <div class="row">
+            <h3>RecordSummaryList</h3>
+            <div class="container">
+                <div class="row">
        
-            @foreach(AlbumReadDto album in Records)
-            {
-            <div class="col-md-4">
-                <RecordSummary Record="album" />
-            </div>
-            }
+                    @foreach(AlbumReadDto album in Records)
+                    {
+                        <div class="col-md-4">
+                            <RecordSummary Record="album" />
+                        </div>
+                    }
 
-        </div>
-    </div>
-        }
+                </div>
+            </div>
+                }
         else{
             <div class="text-center">
-            <h3>No records found</h3>
-    </div>
+                <h3>No records found</h3>
+            </div>        
         }
   
 
@@ -32,184 +32,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Records = new List<AlbumReadDto>();
-        // AlbumReadDto Album = new()
-        //     {
-        //         Title = "Abbey Road",
-        //         Description = "kdfahdklfhakldfhakld",
-        //         Genres = new List<AlbumGenreReadDto>
-        //         {
-        //             new AlbumGenreReadDto
-        //             {
-        //                 Genre = Genre.Rock
-        //             }
-        //         },
-        //         ArtistJunction = new List<ArtistAlbumJunctionReadDto>
-        //         {
-        //             new ArtistAlbumJunctionReadDto
-        //             {
-        //                 Artist = new(){
-        //                     Id = 1,
-        //                     Name = "The Beatles"
-        //                 }
-        //             }
-        //         }
-        //     };
-        // AlbumReadDto Album2 = new()
-        //     {
-        //         Title = "Abbey Road",
-        //         Description = "kdfahdklfhakldfhakld",
-        //         Genres = new List<AlbumGenreReadDto>
-        //         {
-        //             new AlbumGenreReadDto
-        //             {
-        //                 Genre = Genre.Rock
-        //             }
-        //         },
-        //         ArtistJunction = new List<ArtistAlbumJunctionReadDto>
-        //         {
-        //             new ArtistAlbumJunctionReadDto
-        //             {
-        //                 Artist = new(){
-        //                     Id = 1,
-        //                     Name = "The Beatles"
-        //                 }
-        //             }
-        //         }
-        //     };
-        // AlbumReadDto Album3 = new()
-        //     {
-        //         Title = "Abbey Road",
-        //         Description = "kdfahdklfhakldfhakld",
-        //         Genres = new List<AlbumGenreReadDto>
-        //         {
-        //             new AlbumGenreReadDto
-        //             {
-        //                 Genre = Genre.Rock
-        //             }
-        //         },
-        //         ArtistJunction = new List<ArtistAlbumJunctionReadDto>
-        //         {
-        //             new ArtistAlbumJunctionReadDto
-        //             {
-        //                 Artist = new(){
-        //                     Id = 1,
-        //                     Name = "The Beatles"
-        //                 }
-        //             }
-        //         }
-        //     };
-        // AlbumReadDto Album4 = new()
-        //     {
-        //         Title = "Abbey Road",
-        //         Description = "kdfahdklfhakldfhakld",
-        //         Genres = new List<AlbumGenreReadDto>
-        //         {
-        //             new AlbumGenreReadDto
-        //             {
-        //                 Genre = Genre.Rock
-        //             }
-        //         },
-        //         ArtistJunction = new List<ArtistAlbumJunctionReadDto>
-        //         {
-        //             new ArtistAlbumJunctionReadDto
-        //             {
-        //                 Artist = new(){
-        //                     Id = 1,
-        //                     Name = "The Beatles"
-        //                 }
-        //             }
-        //         }
-        //     };
-        // AlbumReadDto Album5 = new()
-        //     {
-        //         Title = "Abbey Road",
-        //         Description = "kdfahdklfhakldfhakld",
-        //         Genres = new List<AlbumGenreReadDto>
-        //         {
-        //             new AlbumGenreReadDto
-        //             {
-        //                 Genre = Genre.Rock
-        //             }
-        //         },
-        //         ArtistJunction = new List<ArtistAlbumJunctionReadDto>
-        //         {
-        //             new ArtistAlbumJunctionReadDto
-        //             {
-        //                 Artist = new(){
-        //                     Id = 1,
-        //                     Name = "The Beatles"
-        //                 }
-        //             }
-        //         }
-        //     };
-        // AlbumReadDto Album6 = new()
-        //     {
-        //         Title = "Abbey Road",
-        //         Description = "kdfahdklfhakldfhakld",
-        //         Genres = new List<AlbumGenreReadDto>
-        //         {
-        //             new AlbumGenreReadDto
-        //             {
-        //                 Genre = Genre.Rock
-        //             }
-        //         },
-        //         ArtistJunction = new List<ArtistAlbumJunctionReadDto>
-        //         {
-        //             new ArtistAlbumJunctionReadDto
-        //             {
-        //                 Artist = new(){
-        //                     Id = 1,
-        //                     Name = "The Beatles"
-        //                 }
-        //             }
-        //         }
-        //     };
-        // AlbumReadDto Album7 = new()
-        //     {
-        //         Title = "Abbey Road",
-        //         Description = "kdfahdklfhakldfhakld",
-        //         Genres = new List<AlbumGenreReadDto>
-        //         {
-        //             new AlbumGenreReadDto
-        //             {
-        //                 Genre = Genre.Rock
-        //             }
-        //         },
-        //         ArtistJunction = new List<ArtistAlbumJunctionReadDto>
-        //         {
-        //             new ArtistAlbumJunctionReadDto
-        //             {
-        //                 Artist = new(){
-        //                     Id = 1,
-        //                     Name = "The Beatles"
-        //                 }
-        //             }
-        //         }
-        //     };
-        // AlbumReadDto Album8 = new()
-        //     {
-        //         Title = "Abbey Road",
-        //         Description = "kdfahdklfhakldfhakld",
-        //         Genres = new List<AlbumGenreReadDto>
-        //         {
-        //             new AlbumGenreReadDto
-        //             {
-        //                 Genre = Genre.Rock
-        //             }
-        //         },
-        //         ArtistJunction = new List<ArtistAlbumJunctionReadDto>
-        //         {
-        //             new ArtistAlbumJunctionReadDto
-        //             {
-        //                 Artist = new(){
-        //                     Id = 1,
-        //                     Name = "The Beatles"
-        //                 }
-        //             }
-        //         }
-        //     };
-        // Records.AddRange([Album, Album2, Album3, Album4, Album5,Album6, Album7, Album8]);
+        
     }
     
 

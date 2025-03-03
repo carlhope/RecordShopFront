@@ -10,8 +10,5 @@
     <ProjectReference Include="..\RecordShopFront.Client\RecordShopFront.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.12" />
   </ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\..\..\RecordShop\RecordShop.Common\RecordShop.Common.csproj"></ProjectReference>
-	</ItemGroup>
 
 </Project>

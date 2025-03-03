@@ -54,76 +54,8 @@ else
     {
         var client = ClientFactory.CreateClient("MyHttpClient");
         Album = await client.GetFromJsonAsync<AlbumReadDto>($"album/{id}");
-        AllArtists = await client.GetFromJsonAsync<List<ArtistReadDto>>("artist");
-        AllGenres = Enum.GetValues(typeof(Genre)).Cast<Genre>().ToList();
-        SelectedArtistIds = Album.ArtistJunction.Select(j => j.Artist.Id).ToList();
-    }
-
-    private async Task ValidSubmit()
-    {
-        List<ArtistAlbumJunctionWriteDto> artistJunctions = new List<ArtistAlbumJunctionWriteDto>();
-        List<AlbumGenreWriteDto> genres = new List<AlbumGenreWriteDto>();
-
-        foreach (var artistId in SelectedArtistIds)
-        {
-            artistJunctions.Add(new ArtistAlbumJunctionWriteDto
-                {
-                    ArtistId = artistId,
-                    AlbumId = Album.Id
-                });
-        }
-        foreach (var genre in SelectedGenres)
-        {
-            genres.Add(new AlbumGenreWriteDto
-                {
-                    AlbumId = Album.Id,
-                    Genre = genre
-                });
-        }
-
-        var albumWriteDto = new AlbumWriteDto
-            {
-                Id = Album.Id,
-                Title = Album.Title,
-                Description = Album.Description,
-                Genres = genres,
-                ArtistJunction = artistJunctions
-            };
-
-        var client = ClientFactory.CreateClient("MyHttpClient");
-        var content = new StringContent(JsonSerializer.Serialize(albumWriteDto), Encoding.UTF8, "application/json");
-        var response = await client.PutAsync($"album/{albumWriteDto.Id}", content);
-
-        if (response.IsSuccessStatusCode)
-        {
-            Console.WriteLine("Success");
-        }
-        else
-        {
-            Console.WriteLine("Fail");
-        }
-    }
-
-    private bool IsGenreChecked(Genre genre)
-    {
-        return SelectedGenres.Contains(genre);
-    }
-
-    private bool IsArtistChecked(ArtistReadDto artist)
-    {
-        return SelectedArtists.Contains(artist);
-    }
-
-    private void UpdateSelectedGenres(ChangeEventArgs e, Genre genre)
-    {
-        var isChecked = (bool)e.Value;
-        if (isChecked)
-        {
-            SelectedGenres.Add(genre);
-        }
-        else
-        {
-            SelectedGenres.Remove(genre);
-        }
+        //AllArtists = await client.GetFromJsonAsync<List<ArtistReadDto>>("artist");
+        //AllGenres = Enum.GetValues(typeof(Genre)).Cast<Genre>().ToList();
+        //SelectedArtistIds = Album.ArtistJunction.Select(j => j.Artist.Id).ToList();
     }
 }
