@@ -1,0 +1,39 @@
+﻿@using System.Text.Json
+@using System.Text
+@inject IHttpClientFactory ClientFactory
+<h3>RecordDetails</h3>
+<EditForm Model="Record" OnValidSubmit="Submit">
+    <label for="Title">Title </label>
+    <InputText @bind-Value="Record.Title" />
+    <label for="Description">Description</label>
+    <InputText @bind-Value="Record.Description" />
+
+    <button type="submit">Save</button>
+
+</EditForm>
+<div>
+    <p>@Record.Title</p>
+    <p>@Record.Description</p>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    public AlbumWriteDto Record { get; set; }
+    protected override void OnInitialized()
+    {
+        Record = new AlbumWriteDto();
+    }
+    private void Submit(){
+        var client = ClientFactory.CreateClient("MyHttpClient");
+        var content = new StringContent(JsonSerializer.Serialize(Record), Encoding.UTF8, "application/json");
+        var response = client.PostAsync("album", content).Result;
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Success");
+        }
+        else
+        {
+            Console.WriteLine("Fail");
+        }
+    }
+}
