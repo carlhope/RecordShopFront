@@ -1,5 +1,4 @@
 ﻿using RecordShop.Common.Dto.Music;
-using RecordShop.Common.Enums;
 
 namespace RecordShop.Common.Dto.Inventory
 {

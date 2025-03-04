@@ -1,7 +1,8 @@
 ﻿@page "/albums/{id:int}"
 @rendermode InteractiveServer
+@using RecordShopFront.Components.album
 <h3>AlbumById</h3>
-<RecordShopFront.Components.album.RecordLoaderById id="id"/>
+<RecordLoaderById id="id"/>
 
 @code {
     [Parameter]

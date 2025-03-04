@@ -1,12 +1,13 @@
 ﻿@page "/"
 @rendermode InteractiveServer
 @using RecordShop.Common.Dto
+@using RecordShopFront.Components.album
 
 <PageTitle>Music World</PageTitle>
 
 <h1 class="text-center">Welcome to Music World</h1>
 
-<RecordShopFront.Components.album.RecordDetails></RecordShopFront.Components.album.RecordDetails>
+<RecordLoader/>
 
 
 @code{

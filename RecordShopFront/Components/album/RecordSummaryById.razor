@@ -1,75 +1,58 @@
 ﻿@inject IHttpClientFactory ClientFactory
-@    using System.Text.Json
-@    using System.Text
-@    using RecordShopFront.Services
-@    using RecordShopFront.models;
-    using RecordShopFront.models.ViewModels
+@using System.Text.Json
+@using System.Text
+@using RecordShopFront.Services
+@using RecordShopFront.models;
+@using RecordShopFront.models.ViewModels
+@if (!isLoaded)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div>
+        <EditForm Model="@Album" FormName="UpdateAlbum" OnValidSubmit="ValidSubmit">
+            <label for="Title">Title</label>
+            <InputText @bind-Value="Album.Title" />
+            <label for="Description">Description</label>
+            <InputText @bind-Value="Album.Description" />
+            <div>
+                <label>New Artist:</label>
+                <input @bind="newArtistName" />
+                <button type="button" @onclick="AddArtist">Add Artist</button>
+            </div>
 
-<div>
-    <EditForm Model="@Album" FormName="UpdateAlbum" OnValidSubmit="ValidSubmit">
-        <label for="Title">Title</label>
-        <InputText @bind-Value="Album.Title" />
-        <label for="Description">Description</label>
-        <InputText @bind-Value="Album.Description" />
-        <button type="submit">Save</button>
-    </EditForm>
-    <EditForm Model="@addJunction" FormName="AddArtist" OnSubmit="AddArtist">
-        <!--link to artist via artist id-->
-        <label for="addJunction.ArtistId">Artist</label>
-        <InputNumber @bind-Value="addJunction.ArtistId"/>
-        <button type="submit">Add Artist</button>
-    </EditForm>
-    <EditForm Model="@removeJunction" FormName="RemoveArtist" OnSubmit="RemoveArtist">
-        <!--link to artist via artist id-->
-        <label for="removeJunction.ArtistId">Artist</label>
-        <InputNumber @bind-Value="removeJunction.ArtistId" />
-        <button type="submit">Remove Artist</button>
-    </EditForm>
-    <EditForm Model="AddGenre" FormName="AddGenre" OnSubmit="AddGenreToAlbum">
-        <InputSelect @bind-Value="AddGenre.Genre">
-            @foreach(var g in Enum.GetValues(typeof(Genre))){
-                <option value="@g">@g</option>
-            }
-        </InputSelect>
-        <button type="submit">Add Genre</button>
-    </EditForm>
-    <EditForm Model="RemoveGenre" FormName="RemoveGenre" OnSubmit="RemoveGenreFromAlbum">
-        <InputSelect @bind-Value="RemoveGenre.Genre">
-            @foreach (var g in Enum.GetValues(typeof(Genre)))
-            {
-                <option value="@g">@g</option>
-            }
-        </InputSelect>
-        <button type="submit">Remove Genre</button>
-    </EditForm>
+            <ul>
+                @foreach (var albumArtist in Album.ArtistJunction)
+                {
+                    <li>
+                        @albumArtist.Artist.Name
+                        <button type="button" @onclick="@(() => RemoveArtist(albumArtist.ArtistId))">Remove</button>
+                    </li>
+                }
+            </ul>
+            <button type="submit">Save</button>
+        </EditForm>
+    </div>
+}
 
-
-</div>
 
 
 
 
 @code {
 
-    //[Parameter]
-    //public List<ArtistReadDto> AllArtists { get; set; }
     [Parameter]
-    public AlbumReadDto Album { get; set; }
-    [Parameter]
-    public List<Genre> AllGenres { get; set; }
-    [Parameter]
-    public JunctionViewModel addJunction { get; set; } = new JunctionViewModel();
-    public JunctionViewModel removeJunction { get; set; } = new JunctionViewModel();
-    public GenreViewModel AddGenre { get; set; } = new GenreViewModel();
-    public GenreViewModel RemoveGenre { get; set; } = new GenreViewModel();
+    public AlbumWriteDto Album { get; set; }
+    private string newArtistName;
+    private bool isLoaded = false;
 
 
     private async void ValidSubmit()
     {
-        AlbumWriteDto albumWriteDto = AlbumService.ConvertFromReadToWrite(Album);
         var client = ClientFactory.CreateClient("MyHttpClient");
-        var content = new StringContent(JsonSerializer.Serialize(albumWriteDto), Encoding.UTF8, "application/json");
-        var response = await client.PutAsync($"album/{albumWriteDto.Id}", content);
+        var content = new StringContent(JsonSerializer.Serialize(Album), Encoding.UTF8, "application/json");
+        var response = await client.PutAsync($"album/{Album.Id}", content);
 
         if (response.IsSuccessStatusCode)
         {
@@ -81,33 +64,47 @@
         }
     }
 
-    private async void AddArtist()
-    {
-        var client = ClientFactory.CreateClient("MyHttpClient");
-        ArtistReadDto? artist = await client.GetFromJsonAsync<ArtistReadDto>($"artist/{addJunction.ArtistId}");
-        var result = AlbumService.AddArtist(Album, addJunction.ArtistId);
-        ArtistAlbumJunctionWriteDto albumWriteDto = result.Item2;
-        if (result.Item1.IsSuccess == true && artist!=null)
-        {
-            await SubmitAfterEdit(albumWriteDto);
-            Album.ArtistJunction.Add( new ArtistAlbumJunctionReadDto(){AlbumId = Album.Id, ArtistId = addJunction.ArtistId});
-        }
 
 
-    }
-    private async void RemoveArtist()
-    {
 
-
-            var response = await client.DeleteAsync($"artistalbum/{data.Id}");
-
-    
     protected override async Task OnInitializedAsync()
     {
-      
+        isLoaded = true;
 
+    }
+
+    private async void AddArtist()
+    {
+        if (!string.IsNullOrEmpty(newArtistName))
+        {
+            //check if artist exists
+            var client = ClientFactory.CreateClient("MyHttpClient");
+            var response = await client.GetAsync($"artist/{newArtistName}");
+            //TODO: Add controller endpoint
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var artist = response.Content.ReadFromJsonAsync<ArtistWriteDto>().Result;
+                Album.ArtistJunction.Add(new ArtistAlbumJunctionWriteDto { Album = Album, Artist = artist, AlbumId = Album.Id, ArtistId = artist.Id });
+                newArtistName = string.Empty;
+            }
+            else
+            {
+                Console.WriteLine("Artist not found");
+            }
+        }
+    }
+
+    private void RemoveArtist(int artistId)
+    {
+        // var albumArtist = album.AlbumArtists.FirstOrDefault(aa => aa.ArtistId == artistId);
+        // if (albumArtist != null)
+        // {
+        //     album.AlbumArtists.Remove(albumArtist);
+        // }
     }
 
     
 
 }
+

@@ -3,7 +3,7 @@
 @using System.Text.Json
 @using System.Text
 
-@if (Album == null)
+@if (Album == null ||isLoaded==false)
 {
     <Loader Message="Loading Records" />
 }
@@ -11,27 +11,22 @@ else
 {
     
 
-    <CascadingValue Value="@Album">
+   
         <RecordSummaryById Album="Album"></RecordSummaryById>
-    </CascadingValue>
+  
 }
 
 @code {
     [Parameter]
     public int id { get; set; }
-    AlbumReadDto? Album = new AlbumReadDto();
-    //private List<ArtistReadDto> AllArtists = new List<ArtistReadDto>();
-    //private HashSet<Genre> SelectedGenres { get; set; } = new HashSet<Genre>();
-    //public List<ArtistReadDto> SelectedArtists { get; set; } = new List<ArtistReadDto>();
-    //private List<int> SelectedArtistIds { get; set; } = new List<int>();
-    //private List<Genre> AllGenres = new List<Genre>();
+    AlbumWriteDto? Album = new AlbumWriteDto();
+    private bool isLoaded = false;
 
     protected override async Task OnInitializedAsync()
     {
         var client = ClientFactory.CreateClient("MyHttpClient");
-        Album = await client.GetFromJsonAsync<AlbumReadDto>($"album/{id}");
-        //AllArtists = await client.GetFromJsonAsync<List<ArtistReadDto>>("artist");
-        //AllGenres = Enum.GetValues(typeof(Genre)).Cast<Genre>().ToList();
-        //SelectedArtistIds = Album.ArtistJunction.Select(j => j.Artist.Id).ToList();
+        Album = await client.GetFromJsonAsync<AlbumWriteDto>($"album/{id}");
+        Console.WriteLine(Album.Title);
+        isLoaded = true;
     }
 }
