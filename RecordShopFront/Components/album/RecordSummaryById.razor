@@ -79,7 +79,7 @@ else
         {
             //check if artist exists
             var client = ClientFactory.CreateClient("MyHttpClient");
-            var response = await client.GetAsync($"artist/{newArtistName}");
+            var response = await client.GetAsync($"artist/name/{newArtistName}");
             //TODO: Add controller endpoint
             
             if (response.IsSuccessStatusCode)
@@ -97,11 +97,11 @@ else
 
     private void RemoveArtist(int artistId)
     {
-        // var albumArtist = album.AlbumArtists.FirstOrDefault(aa => aa.ArtistId == artistId);
-        // if (albumArtist != null)
-        // {
-        //     album.AlbumArtists.Remove(albumArtist);
-        // }
+        var albumArtist = Album.ArtistJunction.FirstOrDefault(aa => aa.ArtistId == artistId);
+        if (albumArtist != null)
+        {
+            Album.ArtistJunction.Remove(albumArtist);
+        }
     }
 
     
