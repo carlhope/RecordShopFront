@@ -87,6 +87,7 @@ else
                 var artist = response.Content.ReadFromJsonAsync<ArtistWriteDto>().Result;
                 Album.ArtistJunction.Add(new ArtistAlbumJunctionWriteDto { Album = Album, Artist = artist, AlbumId = Album.Id, ArtistId = artist.Id });
                 newArtistName = string.Empty;
+                StateHasChanged();
             }
             else
             {
@@ -101,6 +102,7 @@ else
         if (albumArtist != null)
         {
             Album.ArtistJunction.Remove(albumArtist);
+            StateHasChanged();
         }
     }
 
