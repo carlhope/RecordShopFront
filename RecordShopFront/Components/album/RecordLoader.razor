@@ -1,5 +1,6 @@
 ﻿@inject IHttpClientFactory ClientFactory
 @using RecordShopFront.Components.album
+@using RecordShopFront.models
 @if(Albums==null){
     <Loader Message="Loading Records"/>
 }
@@ -8,12 +9,12 @@ else{
 }
 
 @code {
-    List<AlbumReadDto>? Albums { get; set; }
+    List<AlbumModel>? Albums { get; set; }
    
     protected override async Task OnInitializedAsync()
     {
         var client = ClientFactory.CreateClient("MyHttpClient");
-        Albums = await client.GetFromJsonAsync<List<AlbumReadDto>>("album");
+        Albums = await client.GetFromJsonAsync<List<AlbumModel>>("album");
         
     }
     

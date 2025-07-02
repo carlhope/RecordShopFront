@@ -1,4 +1,4 @@
-﻿namespace RecordShopFront.models.ViewModels
+﻿namespace RecordShopFront.models
 {
     public class AlbumModel
     {

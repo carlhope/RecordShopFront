@@ -3,7 +3,6 @@
 @using System.Text
 @using RecordShopFront.Services
 @using RecordShopFront.models;
-@using RecordShopFront.models.ViewModels
 @if (!isLoaded)
 {
     <p>Loading...</p>
@@ -23,7 +22,7 @@ else
             </div>
 
             <ul>
-                @foreach (var albumArtist in Album.ArtistJunction)
+                @foreach (var albumArtist in Album.Artists)
                 {
                     <li>
                         @albumArtist.Artist.Name
@@ -43,7 +42,7 @@ else
 @code {
 
     [Parameter]
-    public AlbumWriteDto Album { get; set; }
+    public AlbumModel Album { get; set; }
     private string newArtistName;
     private bool isLoaded = false;
 
@@ -84,8 +83,8 @@ else
             
             if (response.IsSuccessStatusCode)
             {
-                var artist = response.Content.ReadFromJsonAsync<ArtistWriteDto>().Result;
-                Album.ArtistJunction.Add(new ArtistAlbumJunctionWriteDto { Album = Album, Artist = artist, AlbumId = Album.Id, ArtistId = artist.Id });
+                var artist = response.Content.ReadFromJsonAsync<ArtistModel>().Result;
+                Album.Artists.Add(new JunctionModel { Album = Album, Artist = artist, AlbumId = Album.Id, ArtistId = artist.Id });
                 newArtistName = string.Empty;
                 StateHasChanged();
             }
@@ -98,10 +97,10 @@ else
 
     private void RemoveArtist(int artistId)
     {
-        var albumArtist = Album.ArtistJunction.FirstOrDefault(aa => aa.ArtistId == artistId);
+        var albumArtist = Album.Artists.FirstOrDefault(aa => aa.ArtistId == artistId);
         if (albumArtist != null)
         {
-            Album.ArtistJunction.Remove(albumArtist);
+            Album.Artists.Remove(albumArtist);
             StateHasChanged();
         }
     }

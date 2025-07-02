@@ -2,6 +2,7 @@
 @using RecordShopFront.Components.album
 @using System.Text.Json
 @using System.Text
+@using RecordShopFront.models
 
 @if (Album == null ||isLoaded==false)
 {
@@ -19,13 +20,13 @@ else
 @code {
     [Parameter]
     public int id { get; set; }
-    AlbumWriteDto? Album = new AlbumWriteDto();
+    AlbumModel? Album = new AlbumModel();
     private bool isLoaded = false;
 
     protected override async Task OnInitializedAsync()
     {
         var client = ClientFactory.CreateClient("MyHttpClient");
-        Album = await client.GetFromJsonAsync<AlbumWriteDto>($"album/{id}");
+        Album = await client.GetFromJsonAsync<AlbumModel>($"album/{id}");
         Console.WriteLine(Album.Title);
         isLoaded = true;
     }
