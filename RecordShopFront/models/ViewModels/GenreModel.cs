@@ -2,7 +2,7 @@
 
 namespace RecordShopFront.models.ViewModels
 {
-    public class GenreViewModel
+    public class GenreModel
     {
         public int Id { get; set; }
         public int AlbumId { get; set; }

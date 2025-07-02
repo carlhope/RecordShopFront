@@ -1,6 +1,6 @@
 ﻿namespace RecordShopFront.models.ViewModels
 {
-    public class JunctionViewModel
+    public class JunctionModel
     {
         public int Id { get; set; }
         public int ArtistId { get; set; }

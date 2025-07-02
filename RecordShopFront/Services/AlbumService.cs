@@ -56,9 +56,9 @@ namespace RecordShopFront.Services
             return (operationResult, dto);
 
         }
-        public static GenreViewModel GenreReadDtoToViewModel(AlbumGenreReadDto dto)
+        public static GenreModel GenreReadDtoToViewModel(AlbumGenreReadDto dto)
         {
-            GenreViewModel vm = new GenreViewModel()
+            GenreModel vm = new GenreModel()
             {
                 Id = dto.Id,
                 AlbumId = dto.AlbumId,
@@ -66,7 +66,7 @@ namespace RecordShopFront.Services
             };
             return vm;
         }
-        public static AlbumGenreReadDto GenreViewModelToReadDto(GenreViewModel vm)
+        public static AlbumGenreReadDto GenreViewModelToReadDto(GenreModel vm)
         {
             AlbumGenreReadDto dto = new()
             {
@@ -76,7 +76,7 @@ namespace RecordShopFront.Services
             };
             return dto;
         }
-        public static AlbumGenreWriteDto GenreViewModelToWriteDto(GenreViewModel vm)
+        public static AlbumGenreWriteDto GenreViewModelToWriteDto(GenreModel vm)
         {
             AlbumGenreWriteDto dto = new AlbumGenreWriteDto(){
                 Id = vm.Id,
