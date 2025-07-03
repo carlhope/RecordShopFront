@@ -10,7 +10,7 @@
             @Record.Description
         </p>
         <h5 class="card-subtitle">Artists</h5>
-        @foreach (JunctionModel junction in Record.Artists)
+        @foreach (JunctionModel junction in Record.ArtistJunction)
         {
             <p class="card-text">@junction.Artist.Name</p>
         }

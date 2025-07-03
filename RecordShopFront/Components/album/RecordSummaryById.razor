@@ -22,7 +22,7 @@ else
             </div>
 
             <ul>
-                @foreach (var albumArtist in Album.Artists)
+                @foreach (var albumArtist in Album.ArtistJunction)
                 {
                     <li>
                         @albumArtist.Artist.Name
@@ -30,6 +30,10 @@ else
                     </li>
                 }
             </ul>
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <p>@statusMessage</p>
+            }
             <button type="submit">Save</button>
         </EditForm>
     </div>
@@ -45,21 +49,27 @@ else
     public AlbumModel Album { get; set; }
     private string newArtistName;
     private bool isLoaded = false;
+    private string statusMessage = string.Empty;
 
 
-    private async void ValidSubmit()
+    private async Task ValidSubmit()
     {
+        foreach (var junction in Album.ArtistJunction ?? Enumerable.Empty<JunctionModel>())
+        {
+            junction.Album = null; // Break circular reference
+        }
+       
         var client = ClientFactory.CreateClient("MyHttpClient");
         var content = new StringContent(JsonSerializer.Serialize(Album), Encoding.UTF8, "application/json");
         var response = await client.PutAsync($"album/{Album.Id}", content);
 
         if (response.IsSuccessStatusCode)
         {
-            Console.WriteLine("Success");
+            statusMessage = "Album updated successfully!";
         }
         else
         {
-            Console.WriteLine("Fail");
+            statusMessage = "Failed to update album.";
         }
     }
 
@@ -78,14 +88,13 @@ else
         {
             //check if artist exists
             var client = ClientFactory.CreateClient("MyHttpClient");
-            var response = await client.GetAsync($"artist/name/{newArtistName}");
-            //TODO: Add controller endpoint
+            var response = await client.GetAsync($"artist/name/{newArtistName}");//artist needs to exist. cannot add new artist directly
             
             if (response.IsSuccessStatusCode)
             {
-                var artist = response.Content.ReadFromJsonAsync<ArtistModel>().Result;
-                Album.Artists.Add(new JunctionModel { Album = Album, Artist = artist, AlbumId = Album.Id, ArtistId = artist.Id });
-                newArtistName = string.Empty;
+                var artist = await response.Content.ReadFromJsonAsync<ArtistModel>();
+                Album.ArtistJunction.Add(new JunctionModel {Artist = artist, AlbumId = Album.Id, ArtistId = artist.Id });
+                newArtistName = string.Empty;//empty the input field
                 StateHasChanged();
             }
             else
@@ -97,10 +106,10 @@ else
 
     private void RemoveArtist(int artistId)
     {
-        var albumArtist = Album.Artists.FirstOrDefault(aa => aa.ArtistId == artistId);
+        var albumArtist = Album.ArtistJunction.FirstOrDefault(aa => aa.ArtistId == artistId);
         if (albumArtist != null)
         {
-            Album.Artists.Remove(albumArtist);
+            Album.ArtistJunction.Remove(albumArtist);
             StateHasChanged();
         }
     }

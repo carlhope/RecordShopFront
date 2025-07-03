@@ -4,9 +4,13 @@
 @using System.Text
 @using RecordShopFront.models
 
-@if (Album == null ||isLoaded==false)
+@if (!isLoaded)
 {
     <Loader Message="Loading Records" />
+}
+else if (Album == null)
+{
+    <p>Album not found.</p>
 }
 else
 {
@@ -26,8 +30,24 @@ else
     protected override async Task OnInitializedAsync()
     {
         var client = ClientFactory.CreateClient("MyHttpClient");
-        Album = await client.GetFromJsonAsync<AlbumModel>($"album/{id}");
-        Console.WriteLine(Album.Title);
+        var response = await client.GetAsync($"album/{id}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            Album = await response.Content.ReadFromJsonAsync<AlbumModel>();
+            Console.WriteLine(Album.Title);
+        }
+        else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            Console.WriteLine($"Album with ID {id} not found.");
+            Album = null;
+        }
+        else
+        {
+            Console.WriteLine($"Unexpected error: {response.StatusCode}");
+            Album = null;
+        }
+
         isLoaded = true;
     }
 }

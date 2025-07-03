@@ -12,7 +12,7 @@ namespace RecordShopFront.Services
         {
             OperationResult operationResult = new OperationResult();
             AlbumModel album = _album;
-            var artistExists = album.Artists.Any(j => j.ArtistId == artistId);
+            var artistExists = album.ArtistJunction.Any(j => j.ArtistId == artistId);
             if (artistExists==false)
             {
 
@@ -22,7 +22,7 @@ namespace RecordShopFront.Services
                     ArtistId = artistId,
                     AlbumId = album.Id
                 };
-                album.Artists.Add(junction);
+                album.ArtistJunction.Add(junction);
                 operationResult.IsSuccess = true;
                 operationResult.Message = "Artist added successfully.";
             }
