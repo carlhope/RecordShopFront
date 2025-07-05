@@ -1,0 +1,46 @@
+﻿@using RecordShopFront.models
+<div class="card border-secondary mb-3">
+    <div class="card-header bg-secondary text-white">Artists</div>
+    <div class="card-body">
+        <label>Add Artist</label>
+        <div class="input-group mb-3">
+            <input @bind="NewArtist" @bind:event="oninput" class="form-control" placeholder="Enter artist name" />
+            <button type="button"
+                    class="btn btn-outline-dark"
+                    @onclick="HandleAdd"
+                    disabled="@string.IsNullOrWhiteSpace(NewArtist)">
+                Add
+            </button>
+        </div>
+
+        <ul class="list-group">
+            @foreach (var artist in Artists)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    @artist.Artist.Name
+                    <button class="btn btn-sm btn-danger" @onclick="() => HandleRemove(artist.ArtistId)">Remove</button>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<JunctionModel> Artists { get; set; } = new();
+    [Parameter] public EventCallback<string> OnAddArtist { get; set; }
+    [Parameter] public EventCallback<int> OnRemoveArtist { get; set; }
+
+    private string NewArtist = "";
+
+    private async Task HandleAdd()
+    {
+        await OnAddArtist.InvokeAsync(NewArtist);
+        NewArtist = "";
+    }
+
+    private async Task HandleRemove(int id)
+    {
+        await OnRemoveArtist.InvokeAsync(id);
+        NewArtist = "";
+    }
+}

@@ -1,0 +1,18 @@
+﻿<div class="mb-3">
+    <label>@Label</label>
+    <input class="form-control"
+           @bind="Value"
+           @oninput="HandleInput" />
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString() ?? "";
+        await ValueChanged.InvokeAsync(Value);
+    }
+}
