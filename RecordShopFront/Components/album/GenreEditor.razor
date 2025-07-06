@@ -1,0 +1,61 @@
+﻿@using RecordShopFront.models
+
+<div class="card border-secondary mb-3">
+    <div class="card-header bg-secondary text-white">Genres</div>
+    <div class="card-body">
+        <label>Add Genre</label>
+        <div class="input-group mb-3">
+            <select class="form-select" @bind="SelectedGenreId">
+                <option disabled value="">-- Select Genre --</option>
+                @foreach (var genre in AllGenres)
+                {
+                    <option value="@genre.Id">@genre.Genre</option>
+                }
+            </select>
+            <button type="button" class="btn btn-sm btn-outline-primary mt-2" @onclick="HandleAdd">Add Genre</button>
+        </div>
+
+        <ul class="list-group">
+            @foreach (var genre in SelectedGenres)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    @genre.Genre
+                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => HandleRemove(genre.Id)">Remove</button>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<GenreModel> AllGenres { get; set; } = new(); // from DB
+    [Parameter] public List<GenreModel> SelectedGenres { get; set; } = new(); // bound to model
+    [Parameter] public EventCallback<GenreModel> OnAddGenre { get; set; }
+    [Parameter] public EventCallback<GenreModel> OnRemoveGenre { get; set; }
+
+    private int? SelectedGenreId;
+
+    private async Task HandleAdd()
+    {
+        if (SelectedGenreId.HasValue &&
+            !SelectedGenres.Any(g => g.Id == SelectedGenreId))
+        {
+            var genre = AllGenres.FirstOrDefault(g => g.Id == SelectedGenreId);
+            if (genre is not null)
+            {
+                await OnAddGenre.InvokeAsync(genre);
+                SelectedGenreId = null;
+            }
+        }
+    }
+
+
+    private async Task HandleRemove(int id)
+    {
+        var genre = AllGenres.FirstOrDefault(g => g.Id == id);
+        if (genre is not null)
+        {
+            await OnRemoveGenre.InvokeAsync(genre);
+        }
+    }
+}

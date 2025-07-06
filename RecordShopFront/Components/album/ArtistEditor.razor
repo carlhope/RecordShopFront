@@ -18,7 +18,7 @@
             {
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     @artist.Artist.Name
-                    <button class="btn btn-sm btn-danger" @onclick="() => HandleRemove(artist.ArtistId)">Remove</button>
+                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => HandleRemove(artist.ArtistId)">Remove</button>
                 </li>
             }
         </ul>

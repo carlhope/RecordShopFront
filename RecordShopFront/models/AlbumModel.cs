@@ -1,5 +1,7 @@
 ﻿
 
+using RecordShopFront.Components.Pages;
+
 namespace RecordShopFront.models
 {
     public class AlbumModel
@@ -8,6 +10,7 @@ namespace RecordShopFront.models
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public List<JunctionModel> ArtistJunction { get; set; } = new();
+        public List<int> GenreIds { get; set; } = new();
         public List<GenreModel> Genres { get; set; } = new();
     }
 }

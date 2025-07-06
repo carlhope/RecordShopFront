@@ -10,33 +10,7 @@
 else
 {
     <div class="container mt-4">
-        <EditForm Model="@Album" FormName="UpdateAlbum" OnValidSubmit="ValidSubmit">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Edit Album</h4>
-                </div>
-                <div class="card-body">
-                    <AlbumField Label="Album Title"
-                                Value="@Album.Title"
-                                ValueChanged="@((val) => Album.Title = val)" />
-
-                    <AlbumField Label="Description"
-                                Value="@Album.Description"
-                                ValueChanged="@((val) => Album.Description = val)" />
-
-                    <ArtistEditor Artists="@Album.ArtistJunction"
-                                  OnAddArtist="@AddArtist"
-                                  OnRemoveArtist="@RemoveArtist" />
-
-                    @if (!string.IsNullOrEmpty(statusMessage))
-                    {
-                        <div class="alert alert-info mt-3">@statusMessage</div>
-                    }
-
-                    <button type="submit" class="btn btn-success mt-3">Save</button>
-                </div>
-            </div>
-        </EditForm>
+ <AlbumEditForm />
     </div>
 }
 
@@ -45,80 +19,17 @@ else
 
 
 @code {
-
-    [Parameter]
-    public AlbumModel Album { get; set; }
     private bool isLoaded = false;
-    private string statusMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
+
         isLoaded = true;
 
     }
+    
 
-    private async Task ValidSubmit()
-    {
-        foreach (var junction in Album.ArtistJunction ?? Enumerable.Empty<JunctionModel>())
-        {
-            junction.Album = null; // Break circular reference
-        }
-
-        var client = ClientFactory.CreateClient("MyHttpClient");
-        var content = new StringContent(JsonSerializer.Serialize(Album), Encoding.UTF8, "application/json");
-        var response = await client.PutAsync($"album/{Album.Id}", content);
-
-        if (response.IsSuccessStatusCode)
-        {
-            statusMessage = "Album updated successfully!";
-        }
-        else
-        {
-            statusMessage = "Failed to update album.";
-        }
-        StateHasChanged(); // Update UI to show message
-        // Wait 5 seconds, then clear the message
-        await Task.Delay(5000);
-        statusMessage = string.Empty;
-        StateHasChanged(); // Update UI again to remove message
-
-    }
-
-    private async void AddArtist(string name)
-    {
-        if (!string.IsNullOrEmpty(name))
-        {
-            //check if artist exists
-            var client = ClientFactory.CreateClient("MyHttpClient");
-            var response = await client.GetAsync($"artist/name/{name}");//artist needs to exist. cannot add new artist directly
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var artist = await response.Content.ReadFromJsonAsync<ArtistModel>();
-                if (Album.ArtistJunction.Any(j => j.ArtistId == artist.Id))
-                {
-                    Console.WriteLine("Artist already added.");
-                    return;
-                }
-                Album.ArtistJunction.Add(new JunctionModel {Artist = artist, AlbumId = Album.Id, ArtistId = artist.Id });
-                StateHasChanged();
-            }
-            else
-            {
-                Console.WriteLine("Artist not found");
-            }
-        }
-    }
-
-    private void RemoveArtist(int artistId)
-    {
-        var albumArtist = Album.ArtistJunction.FirstOrDefault(aa => aa.ArtistId == artistId);
-        if (albumArtist != null)
-        {
-            Album.ArtistJunction.Remove(albumArtist);
-            StateHasChanged();
-        }
-    }
+   
 
     
 
